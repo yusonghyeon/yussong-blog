@@ -12,7 +12,11 @@ type PostDetailPageParams = {
   slug: string;
 };
 
-const PostDetailPage = async ({ params }: { params: PostDetailPageParams }) => {
+const PostDetailPage = async ({
+  params,
+}: {
+  params: Promise<PostDetailPageParams>;
+}) => {
   const { slug } = await params;
   const post = getPostBySlug(slug);
 
