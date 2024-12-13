@@ -1,11 +1,16 @@
 import Mdx from "@/components/Mdx";
 import Text from "@/components/Text";
-import { getPostBySlug } from "@/lib/posts";
+import { getAllSlugs, getPostBySlug } from "@/lib/posts";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Post | yussong",
+};
+
+export const generateStaticParams = () => {
+  const slugs = getAllSlugs();
+  return slugs.map((slug) => ({ slug }));
 };
 
 type PostDetailPageParams = {

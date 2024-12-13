@@ -10,3 +10,5 @@ export const getPostBySlug = (slug: string) =>
 
 export const getRecentPosts = (recent: number) =>
   getPostsSortedByDate().slice(0, recent);
+
+export const getAllSlugs = () => allPosts.map((post) => post.slug);

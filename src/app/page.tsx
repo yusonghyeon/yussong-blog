@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import { Metadata } from "next";
 import Text from "@/components/Text";
 import PostCards from "@/components/PostCards";
 import { getRecentPosts } from "@/lib/posts";
