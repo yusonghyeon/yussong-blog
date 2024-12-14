@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import Text from "@/components/Text";
+import Tag from "@/components/Tag";
 
 type ExperienceItem = {
   title: string;
@@ -74,22 +74,8 @@ const AboutPage = () => {
           </Text>
         </div>
         <div className="flex gap-2">
-          <Link
-            href="https://github.com/your-github-profile"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-md bg-slate-100 p-2 text-black delay-75 ease-in-out hover:bg-slate-200"
-          >
-            <Text size="sm">Github</Text>
-          </Link>
-          <Link
-            href="https://www.linkedin.com/in/your-linkedin-profile"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-md bg-slate-100 p-2 text-black delay-75 ease-in-out hover:bg-slate-200"
-          >
-            <Text size="sm">Portfolio</Text>
-          </Link>
+          <Tag href="https://github.com">Github</Tag>
+          <Tag href="https://www.linkedin.com">Portfolio</Tag>
         </div>
       </section>
 
