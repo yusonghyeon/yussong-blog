@@ -2,64 +2,21 @@ import { Metadata } from "next";
 import Text from "@/components/Text";
 import Tag from "@/components/Tag";
 import Link from "next/link";
-
-type ExperienceItem = {
-  title: string;
-  period?: string;
-  descriptions?: string[];
-};
-
-type Experience = {
-  id: string;
-  category: string;
-  items: ExperienceItem[];
-};
-
-const experienceData: Experience[] = [
-  {
-    id: "workExperience",
-    category: "Work Experience",
-    items: [
-      {
-        title: "원프레딕트",
-        period: "2022.07 - 2024.07",
-        descriptions: [
-          "예지보전(PHM) 솔루션 개발",
-          "디자인 시스템 구축 및 CI/CD 개선",
-          "Scrum 기반 애자일 프로세스 경험",
-          "Confluence와 JIRA를 활용한 문서화 및 작업 관리",
-        ],
-      },
-    ],
-  },
-  {
-    id: "education",
-    category: "Education",
-    items: [
-      {
-        title: "제로베이스 - 프론트엔드 스쿨",
-        period: "2021.10 - 2021.12",
-      },
-      {
-        title: "청운대학교 - 컴퓨터공학과",
-        period: "2016.03 - 2022.02",
-      },
-    ],
-  },
-  {
-    id: "certificates",
-    category: "Certificates",
-    items: [
-      {
-        title: "정보처리기사 - 한국산업인력공단",
-        period: "2021.07 취득",
-      },
-    ],
-  },
-];
+import { experienceData } from "./lib/staticData";
+import { BASE_URL } from "@/lib/base";
 
 export const metadata: Metadata = {
   title: "about | yussong",
+  description:
+    "유송현의 블로그 - 프론트엔드 개발자로서의 경험, 기술 스택, 프로젝트, 그리고 목표를 소개합니다.",
+  openGraph: {
+    title: "About | yussong",
+    description: "프론트엔드 개발자로서의 경험을 공유합니다.",
+    url: `${BASE_URL}/about`,
+    siteName: "유송현의 블로그",
+    locale: "ko_KR",
+    type: "profile",
+  },
 };
 
 const AboutPage = () => {
@@ -75,38 +32,26 @@ const AboutPage = () => {
           </Text>
         </div>
         <div className="flex gap-2">
-          <Link href="https://github.com">
+          <Link
+            href="https://github.com/yusonghyeon"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Tag variants="secondary" hoverable>
               Github
             </Tag>
           </Link>
-          <Link href="https://www.linkedin.com">
+          <Link
+            href="https://olive-flower-6cc.notion.site/d5712896345f4d3fa7441a1cacc71753"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Tag variants="secondary" hoverable>
               Portfolio
             </Tag>
           </Link>
         </div>
       </section>
-
-      <section className="flex flex-col gap-2">
-        <Text as="h2" size="xl" weight="bold" color="primary" className="">
-          Introduce
-        </Text>
-        <Text as="p" size="md" color="gray" className="">
-          - 방대한 데이터를 사용자에게 의미 있게 전달하며, 복잡한 비즈니스
-          로직을 함수형 프로그래밍 기반으로 데이터, 계산, 액션 영역으로 분리하는
-          것을 지향합니다.
-        </Text>
-        <Text as="p" size="md" color="gray" className="">
-          - 기획, 디자인, 개발 팀과의 협업을 통해 사용자 경험과 서비스 품질을
-          지속적으로 향상시키는 것을 목표로 하고 있습니다.
-        </Text>
-        <Text as="p" size="md" color="gray">
-          - 자동화 환경 구축과 테스트 코드 도입으로 서비스의 안정성과 업무
-          효율성을 높이기 위해 노력하고 있습니다.
-        </Text>
-      </section>
-
       {experienceData.map(({ id, category, items }) => (
         <section key={id} className="flex flex-col gap-2">
           <h2 className="text-xl font-bold text-primary">{category}</h2>
