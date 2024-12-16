@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Text from "./Text";
+import Tag from "./Tag";
 import { formatDate } from "@/lib/date";
 
 type CardProps = {
@@ -30,12 +31,9 @@ const Card = (props: CardProps) => {
         {categories && (
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
-              <span
-                key={category}
-                className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
-              >
+              <Tag key={category} variants="primary" size="sm">
                 {category}
-              </span>
+              </Tag>
             ))}
           </div>
         )}
