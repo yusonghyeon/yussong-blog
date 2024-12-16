@@ -1,11 +1,38 @@
+import { notFound } from "next/navigation";
 import Mdx from "@/components/Mdx";
 import Text from "@/components/Text";
+import { BASE_URL } from "@/lib/base";
 import { getAllSlugs, getPostBySlug } from "@/lib/posts";
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Post | yussong",
+export const generateMetadata = async ({
+  params,
+}: {
+  params: Promise<PostDetailPageParams>;
+}): Promise<Metadata> => {
+  const { slug } = await params;
+  const post = getPostBySlug(slug);
+
+  if (!post) {
+    return {
+      title: "Post Not Found | yussong",
+      description: "해당 포스트를 찾을 수 없습니다.",
+    };
+  }
+
+  return {
+    title: `${post.title} | yussong`,
+    description: post.title || "유송현의 블로그 포스트",
+    openGraph: {
+      title: `${post.title} | yussong`,
+      description: post.subTitle || "유송현의 블로그 포스트",
+      url: `${BASE_URL}/post/${slug}`,
+      siteName: "유송현의 블로그",
+      type: "article",
+      locale: "ko_KR",
+      publishedTime: post.date,
+    },
+  };
 };
 
 export const generateStaticParams = () => {

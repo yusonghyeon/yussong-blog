@@ -2,10 +2,20 @@ import { Metadata } from "next";
 import Text from "@/components/Text";
 import PostCards from "@/components/PostCards";
 import { getRecentPosts } from "@/lib/posts";
+import { BASE_URL } from "@/lib/base";
 
 export const metadata: Metadata = {
   title: "yussong.dev",
-  description: "유송현 블로그",
+  description:
+    "프론트엔드 개발자 유송현의 블로그 - 기술과 성장에 대한 이야기를 공유합니다.",
+  openGraph: {
+    title: "유송현의 블로그 | 프론트엔드 개발 이야기",
+    description:
+      "프론트엔드 개발자 유송현의 블로그 - 기술과 성장에 대한 이야기를 공유합니다.",
+    url: `${BASE_URL}`,
+    siteName: "유송현의 블로그",
+    type: "website",
+  },
 };
 
 const HomePage = () => {
