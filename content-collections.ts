@@ -1,4 +1,3 @@
-// import { defineCollection, defineConfig } from "@content-collections";
 import { defineCollection, defineConfig } from "@content-collections/core";
 
 const posts = defineCollection({

@@ -1,0 +1,205 @@
+---
+title: "Next.js 정리"
+date: "2024-11-04"
+subTitle: "Next.js 학습 기록"
+categories: ["Next.js"]
+---
+
+## 개요
+
+이전 회사에서 React (CSR) 기반의 프로젝트만 진행하다 보니 서버사이드 렌더링(SSR)에 대한 이해도가 부족하다는 점을 느꼈습니다. 특히 기업에서 Next.js 도입이 활발해지고, 취업 시장에서 Next.js에 대한 수요가 증가하는 흐름을 보며, 이를 학습할 필요성을 느꼇습니다.
+
+React로 쌓은 경험을 바탕으로 SSR 개념, App Router와 Page Router 등 Next.js의 주요 기능을 학습하며 정리한 글입니다.
+
+---
+
+## 서버사이드 렌더링(SSR)이란?
+
+서버사이드 렌더링(SSR, Server-Side Rendering)은 사용자가 웹 페이지를 요청하면 서버에서 HTML을 생성하고, 이를 클라이언트로 반환하는 렌더링 방식입니다. 즉, 사용자가 브라우저에서 페이지를 요청하면 서버는 클라이언트가 필요한 데이터를 수집하고, 이 데이터를 기반으로 완성된 HTML 페이지를 만들어 응답합니다. 클라이언트는 이 HTML을 받아 즉시 브라우저에 표시할 수 있습니다.
+
+SSR은 클라이언트 사이드 렌더링(CSR, Client-Side Rendering)과 달리, 브라우저가 HTML을 완전히 생성하는 과정을 기다릴 필요가 없습니다. CSR에서는 브라우저가 기본 HTML, CSS, JavaScript 파일을 먼저 다운로드한 후, JavaScript가 실행되어 콘텐츠를 생성합니다. 반면, SSR에서는 서버에서 이미 완전한 HTML이 제공되기 때문에 초기 로딩 속도가 빠르고, 사용자는 더 빠르게 콘텐츠를 확인할 수 있습니다.
+
+### SSR 장점
+
+초기 로딩 속도 개선 : HTML이 서버에서 미리 생성되므로 클라이언트가 HTML을 받아 즉시 렌더링할 수 있습니다.
+
+SEO 최적화 : 검색 엔진 크롤러가 완전한 HTML 콘텐츠를 읽을 수 있어 SEO에 유리합니다.
+
+### SSR의 단점
+
+서버와 통신으로 인한 블링킹 이슈: 서버와 통신을 거쳐 페이지를 로드하기 때문에 화면이 깜빡이는(blinking) 현상이 발생할 수 있습니다.
+
+TTV와 TTI 간의 차이: 사용자가 페이지를 시각적으로 확인할 수 있는 시점(TTV)과 페이지와 상호작용이 가능한 시점(TTI) 사이에 차이가 발생할 수 있습니다.
+
+서버 부하 및 비용 증가: SSR 방식에서는 사용자의 요청마다 서버가 HTML을 생성하므로, 동시 접속자가 많아질수록 서버의 비용 및 부하가 증가합니다.
+
+---
+
+## Next.js
+
+### Router
+
+Next.js는 두 가지 라우터 시스템을 제공합니다: Page Router와 App Router. 각각의 라우터는 프로젝트 구조와 사용 방식에서 차이가 있습니다.
+
+#### Page Router
+
+`pages/` 디렉토리를 기반으로 동작하며, 파일 이름을 기준으로 라우터 경로가 자동으로 매핑됩니다.
+
+- 파일 기반 라우팅을 지원합니다.
+- `getServerSideProps`와 `getStaticProps`를 통해 SSR 및 SSG를 구현할 수 있습니다.
+- 디렉토리 내부의 모든 파일이 URL 경로로 노출됩니다.
+
+```tsx
+src/pages
+├─_app.ts
+├─index.ts
+├─a-page.ts
+└─b-page
+  └─index.ts
+   └─component.ts // 라우팅과 관련없는 코드지만 b-page/component라는 경로가 생깁니다.
+```
+
+#### App Router
+
+Next.js 13 이상부터 지원되며, app/ 디렉토리를 기반으로 동작합니다. 라우팅은 page.tsx 파일이 있는 폴더 이름을 기준으로 설정됩니다.
+
+- layout.tsx를 활용하여 경로별 레이아웃을 정의할 수 있습니다.
+- 디렉토리 내부의 파일 중 page.tsx만 URL 경로로 노출됩니다.
+
+```tsx
+src/app
+├─ layout.ts     // 모든 경로에 공통으로 적용되는 레이아웃
+├─ page.ts       // / (루트 경로)
+├─ a-page
+   ├─ page.ts    // /a-page
+   ├─ layout.ts  // a-page 경로에만 적용되는 레이아웃
+   └─ component.ts // 라우팅되지 않으며 내부에서만 사용됩니다.
+```
+
+---
+
+### 컴포넌트: Server vs Client
+
+Next.js는 **서버 컴포넌트(Server Component)**와 **클라이언트 컴포넌트(Client Component)**를 구분하여, 애플리케이션의 렌더링 성능과 사용자 경험을 최적화합니다. 이러한 구조는 컴포넌트가 어디에서 렌더링되는지 명확히 정의함으로써 보안, 성능, 상호작용 등 다양한 측면에서 이점을 제공합니다.
+
+- 기본적으로 모든 컴포넌트는 서버 컴포넌트로 동작합니다.
+- 클라이언트 컴포넌트를 사용하려면, 컴포넌트 최상단에 `'use client'`를 선언해야 합니다.
+
+```tsx
+"use client";
+
+export default function ClientComponent() {
+  return <button onClick={() => alert("클릭!")}>Click Me</button>;
+}
+```
+
+서버 컴포넌트에서 사용가능한 API
+
+- cookies
+- headers
+- redirect
+- generateMetadata
+- revalidatePath
+- ...
+
+클라이언트 컴포넌트에서 사용가능한 API
+
+- usehook
+- event handler
+- webApi
+- ...
+
+---
+
+### 메타 데이터
+
+검색 엔진 최적화(SEO)를 위한 메타 데이터를 페이지 마다 쉽게 정의 가능
+
+#### 정적 메타 데이터 생성
+
+각 경로의 layout.tsx 혹은 page.tsx 파일에서 metadata 객체를 내보내면 됩니다.
+
+```tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "제목!",
+  description: "설명..",
+  openGraph: {
+    title: "제목",
+    description: "설명..",
+    url: "https://example.com",
+    images: [
+      {
+        url: "https://example.com/image.jpg",
+        width: 800,
+        height: 600,
+        alt: "이미지 설명",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "제목",
+    description: "설명..",
+    images: ["https://example.com/image.jpg"],
+  },
+};
+```
+
+#### 동적 메타 데이터 생성
+
+동적 메타 데이터는 서버에서 데이터를 가져오거나 요청에 따라 변경되는 정보를 기반으로 메타 태그를 설정할 때 사용됩니다. 이를 위해 generateMetadata 함수를 활용할 수 있습니다.
+
+```tsx
+import type { Metadata } from "next";
+
+interface Props {
+  params: { slug: string };
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const post = await fetchPost(params.slug);
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url: `https://example.com/posts/${params.slug}`,
+      images: [
+        {
+          url: post.coverImage,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [post.coverImage],
+    },
+  };
+}
+
+// 데이터 페칭 함수
+async function fetchPost(slug: string) {
+  const res = await fetch(`https://api.example.com/posts/${slug}`);
+  return res.json();
+}
+```
+
+---
+
+### 이미지 최적화
+
+`<Image />` 컴포넌트를 사용해 지연 로딩, 브라우저 캐싱, 크기 최적화 등의 기능을
+아주 간단하게 사용할 수 있습니다. src, alt, width, height 속성은 필수이며, 동일
+소스 경로의 이미지는 자동으로 캐싱됩니다.
+
+[Next Image 관련 공식 문서](https://nextjs.org/docs/pages/api-reference/components/image)
+
+[Next 공식 문서](https://nextjs.org/docs)
