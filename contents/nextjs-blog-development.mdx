@@ -219,10 +219,38 @@ const Mdx = async (props: MdxProps) => {
     <MDXRemote
       source={source}
       options={{ parseFrontmatter: true }}
+    />
+  );
+};
+```
+
+### Tip
+
+기본 HTML 태그의 스타일을 수정하거나, MDX 파일에서 사용할 커스텀 컴포넌트를 정의할 수 있습니다.
+
+```
+const components: CustomComponentsType = {
+  h1: (props) => <h1 className="large-text">{props.children}</h1>,
+  Example: (props) => (
+    <div className="example-container">
+      <p className="example-text">Example 컴포넌트:</p>
+      {props.children}
+    </div>
+  ),
+};
+
+const Mdx = async (props: MdxProps) => {
+  const { source } = props;
+
+  return (
+    <MDXRemote
+      source={source}
+      options={{ parseFrontmatter: true }}
       components={componets}
     />
   );
 };
+
 ```
 
 ---
