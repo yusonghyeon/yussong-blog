@@ -1,0 +1,238 @@
+---
+title: "Next.js를 활용한 블로그 개발기"
+date: "2024-11-11"
+subTitle: "Next.js, Tailwind CSS, MDX로 구축한 기술 블로그"
+categories: ["Next.js", "블로그"]
+---
+
+## 개요
+
+이번 포스팅에서는 Next.js를 활용해 간단한 블로그를 만드는 방법을 공유합니다.
+
+## 개발 환경 설정
+
+### 1. Next.js
+
+Next.js 공식 문서를 참고하여 프로젝트를 초기화하고 설치를 진행합니다.
+
+```bash
+npx create-next-app@latest
+```
+
+```
+What is your project named? blog
+Would you like to use TypeScript? Yes
+Would you like to use ESLint? Yes
+Would you like to use Tailwind CSS? Yes
+Would you like your code inside a `src/` directory? Yes
+Would you like to use App Router? (recommended) Yes
+Would you like to use Turbopack for `next dev`?  Yes
+Would you like to customize the import alias (`@/*` by default)? Yes
+What import alias would you like configured? @/*
+```
+
+### 2. 프로젝트 구조
+
+```tsx
+├── contents/               # 블로그 콘텐츠를 관리하는 독립적인 디렉토리
+│   ├── hello-world.mdx     # MDX 형식의 블로그 글 파일
+│   └── another-post.mdx    # 추가 블로그 글 파일
+├── src/                    # 소스 코드 디렉토리
+│   ├── app/                # Next.js 페이지 및 라우팅 관리
+│   │   ├── layout.tsx
+│   │   ├── page.tsx        # 홈 페이지
+│   │   ├── post/           # 블로그 포스트 관련 페이지
+│   │   │   ├── page.tsx    # 포스트 리스트 페이지
+│   │   │   └── [slug].tsx  # 개별 포스트 페이지
+│   │   └── about/          # 소개 페이지
+│   │       └── page.tsx
+│   ├── components/         # UI 컴포넌트
+│   ├── lib/                # 유틸리티 함수 및 데이터 처리 로직
+│   ├── styles/             # style 관련 설정
+```
+
+## 기능 개발
+
+### 1. 포스트 글 저장
+
+`/contents` 디렉토리에 포스트 글을 저장하고, frontMatter에 데이터를 얻기 위해 아래와 같은 형태로 글을 작성합니다.
+
+```
+---
+title: ""
+date: ""
+description: ""
+categories: []
+---
+... cotnetns ...
+```
+
+---
+
+### 2. 글 파싱
+
+`content-collections`를 사용하여 MDX 파일을 파싱합니다. `content-collections` 라이브러리는 강력한 타입 시스템과 편리한 mdx 관리를 지원합니다.
+
+```bash
+pnpm add @content-collections/core @content-collections/next -D
+```
+
+설치 후, Next.js와 통합하기 위해 next.config.js 파일을 수정합니다.
+
+```ts
+// next.config.ts
+import { withContentCollections } from "@content-collections/next";
+
+const nextConfig = {
+  // 기타 설정...
+};
+
+export default withContentCollections(nextConfig);
+```
+
+#### 컬렉션 스키마 정의
+
+```ts
+import { defineCollection, defineConfig } from "@content-collections/core";
+
+const posts = defineCollection({
+  name: "posts",
+  directory: "contents",
+  include: "*.mdx",
+  schema: (z) => ({
+    title: z.string(),
+    subTitle: z.string(),
+    date: z.string(),
+    categories: z.array(z.string()).optional(),
+  }),
+
+  transform: async (document) => {
+    const { title, subTitle, date, categories, content } = document;
+    return {
+      slug: document._meta.path,
+      title,
+      content,
+      subTitle,
+      date,
+      categories,
+    };
+  },
+});
+
+export default defineConfig({
+  collections: [posts],
+});
+```
+
+schema에서 사용할 frontMatter타입을 지정하고, transform 함수로 데이터를 가공할 수 있습니다.
+런타임에서도 타입 검증이 가능하여 포스트 작성 시 필수 frontMatter가 작성되지 않았을 때 에러를 반환합니다.
+
+---
+
+### 3. 목록 페이지
+
+블로그 글 목록을 출력하기 위해 우선적으로 글 데이터를 정렬하여 가져옵니다. `content-collections`를 사용했기 때문에 간단히 처리할 수 있습니다.
+
+`content-collections`의 `allPosts` 헬퍼를 이용해 모든 글 데이터를 가져오고, 작성일 기준으로 정렬합니다.
+
+```tsc
+// lib/posts.ts
+import { allPosts } from "content-collections";
+
+export const getPostsSortedByDate = () =>
+  allPosts.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+```
+
+정렬된 데이터를 불러와 블로그 글 리스트를 렌더링하는 컴포넌트를 작성합니다.
+
+```tsc
+import { getPostsSortedByDate } from "@/lib/posts";
+const PostPage = () => {
+  const posts = getPostsSortedByDate();
+
+  return <PostCards list={posts} />;
+};
+
+```
+
+---
+
+### 4. 상세 페이지
+
+상세 페이지는 동적 라우팅과 MDX 렌더링을 통해 구현됩니다. `next-mdx-remote`를 사용하여 MDX 콘텐츠를 HTML로 변환하고, 슬러그를 기반으로 포스트 데이터를 로드합니다.
+
+#### 동적 라우팅
+
+`src/app/post/[slug]/page.tsx` 파일을 생성합니다. `[slug]`는 동적 라우팅을 처리하는 디렉토리로, URL에 포함된 슬러그 값을 가져와 데이터를 로드합니다.
+
+#### 슬러그 기반 데이터 로드
+
+`lib/posts.ts` 파일에서 슬러그를 기반으로 데이터를 가져오는 함수를 작성합니다.
+
+```
+// lib/posts.ts
+import { allPosts } from "content-collections";
+
+export const getPostBySlug = (slug: string) =>
+  allPosts.find((post) => post.slug === slug);
+```
+
+#### 상세 페이지 컴포넌트
+
+동적 라우팅에서 전달되 slug를 사용하여 데이터를 불러오고, 불러온 데이터를 기반으로 상세 페이지를 렌더링합니다.
+
+```
+const PostDetailPage = async ({
+  params,
+}: {
+  params: Promise<PostDetailPageParams>;
+}) => {
+  const { slug } = await params;
+  const post = getPostBySlug(slug);
+
+  if (!post) {
+    notFound();
+  }
+
+  const { title, date, content } = post;
+
+  rerurn <Mdx source={content} />
+};
+
+```
+
+#### MDX 렌더링
+
+`next-mdx-remote` 라이브러리를 활용해 MDX 콘텐츠를 HTML로 변환합니다.
+
+```tsc
+type MdxProps = {
+  source: string;
+};
+
+const Mdx = async (props: MdxProps) => {
+  const { source } = props;
+
+  return (
+    <MDXRemote
+      source={source}
+      options={{ parseFrontmatter: true }}
+      components={componets}
+    />
+  );
+};
+```
+
+---
+
+### 마무리
+
+여기까지 진행하면 간단한 블로그 만들기가 완료됩니다! 🎉
+
+블로그의 핵심 기능인 글을 작성하고, 이를 렌더링해 보여주는 MVP가 완성되었습니다. 그리고 Vercel을 통해 배포를 진행하여, 이제 실제 웹에서 블로그를 확인할 수 있습니다.
+
+하지만 아직은 기본적인 기능만 구현된 상태라 아쉬움이 남습니다. 추후 추가적인 기능과 SEO 최적화를 통해 블로그의 완성도를 높여갈 예정입니다.
+
+완성된 블로그의 코드는 [GitHub Repository](https://github.com/yusonghyeon/yussong-blog)에서 확인하실 수 있습니다.
